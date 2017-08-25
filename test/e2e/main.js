@@ -130,6 +130,7 @@ describe('Test GTR screen', function () {
       },
       {
         'id': 6469,
+        'url': '/api/v3/repos/m6web/service-polls/pulls/56',
         'html_url': 'http://example.com/m6web/service-polls/pull/56',
         'issue_url': '/api/v3/repos/m6web/service-polls/issues/56',
         'number': 56,
@@ -242,6 +243,31 @@ describe('Test GTR screen', function () {
         }
       ]);
 
+      // reviews
+      backend.whenGET('/api/v3/repos/m6web/service-polls/pulls/56/reviews').respond([
+        {
+          'id': 80,
+          'user': {
+            'login': 'karlouche',
+            'avatar_url': 'http://example.com/karlouche.jpg'
+          },
+          'body': 'Here is the body for the review.',
+          'commit_id': 'ecdd80bb57125d7ba9641ffaa4d7d2c19d3f3091',
+          'state': 'APPROVED',
+          'html_url': 'https://github.com/replay/bundle-polls-client/pulls/56#pullrequestreview-80',
+          'pull_request_url': 'https://api.github.com/repos/replay/bundle-polls-client/pulls/56',
+          '_links': {
+            'html': {
+              'href': 'https://github.com/replay/bundle-polls-client/pulls/56#pullrequestreview-80'
+            },
+            'pull_request': {
+              'href': 'https://api.github.com/repos/replay/bundle-polls-client/pulls/56'
+            }
+          }
+        }
+      ]);
+
+
       // Others
       backend.whenGET(/.*/).passThrough();
     });
@@ -251,7 +277,7 @@ describe('Test GTR screen', function () {
     });
 
     var getPulls = function(element, index) {
-      return {
+      var pull = {
         index: index,
         text: element.getText().then(function (t) { return t.trim(); }),
         class: element.getAttribute('class').then(function (classes) {
@@ -264,6 +290,11 @@ describe('Test GTR screen', function () {
         avatar: element.$('img').getAttribute('src'),
         pullUrl: element.$('.link a').getAttribute('href'),
       };
+      element.$('.link .fa-thumbs-up').getText().then(function (t) { if (t !== '') { pull.approved = t; } });
+      element.$('.link .fa-thumbs-down').getText().then(function (t) { if (t !== '') { pull.changeRequested = t; } });
+      element.$('.link .fa-comment').getText().then(function (t) { if (t !== '') { pull.commented = t; } });
+
+      return pull;
     };
 
     it('should display cytron PR', function () {
@@ -274,10 +305,11 @@ describe('Test GTR screen', function () {
       expect(pulls).toEqual([
         {
           index: 0,
-          text: '#56 PR 56\nm6web/service-polls 28/10/2014',
+          text: '#56 PR 56 1\nm6web/service-polls 28/10/2014',
           class: 'success',
           avatar: 'http://example.com/bieber.jpg',
-          pullUrl: 'http://example.com/m6web/service-polls/pull/56'
+          pullUrl: 'http://example.com/m6web/service-polls/pull/56',
+          approved: '1'
         },
         {
           index: 1,

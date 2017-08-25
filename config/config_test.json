@@ -18,6 +18,7 @@
             "cytron": {
                 "members": ["karlouche", "bieber"],
                 "orgs": ["m6web", "replay"],
+                "reviews": true,
                 "apiUrl": "/api/v3"
             },
             "burton": {
